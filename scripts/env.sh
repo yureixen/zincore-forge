@@ -20,8 +20,6 @@ print(d.get('$1', ''))
 
 KERNEL_REPO=$(read_field kernel_repo)
 KERNEL_BRANCH=$(read_field kernel_branch)
-KERNEL_DEFCONFIG=$(read_field defconfig)
-KERNEL_ARCH=$(read_field arch)
 CLANG_VERSION=$(read_field clang_version)
 CLANG_BRANCH=$(read_field clang_branch)
 
