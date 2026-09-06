@@ -38,8 +38,6 @@ if [ -z "$CLANG_BRANCH" ]; then
     exit 1
 fi
 
-export KERNEL_REPO KERNEL_BRANCH KERNEL_DEFCONFIG KERNEL_ARCH CLANG_VERSION
-
 echo "→ Device: $DEVICE"
 echo "→ Kernel: $KERNEL_REPO ($KERNEL_BRANCH)"
 echo "→ Clang:  clang-$CLANG_VERSION"
