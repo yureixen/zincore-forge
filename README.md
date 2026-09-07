@@ -25,8 +25,8 @@ Zincore focuses on adding ReSukiSU and SuSFS on top of stock kernel — without 
 # Features
 
 **ksu**
-- Root access via ReSukiSU — a KernelSU-based root solution for Android
-- Root-hiding via SuSFS — an addon root-hiding solution for KernelSU
+- ReSukiSU — a KernelSU-based root solution for Android
+- SuSFS — an addon root-hiding solution for KernelSU
 
 **nsu**
 - Stock kernel — no additionals
@@ -42,11 +42,10 @@ Zincore focuses on adding ReSukiSU and SuSFS on top of stock kernel — without 
 6. Install [ReSukiSU Manager](https://github.com/ReSukiSU/ReSukiSU/releases) if needed.(`ksu` only)
 
 **Restore to stock**
-```bash
-fastboot flash boot boot.img
-fastboot flash dtbo dtbo.img
-fastboot reboot
-```
+1. Reboot to bootloader
+2. `fastboot flash boot boot.img`
+3. `fastboot flash dtbo dtbo.img`
+4. `fastboot reboot`
 
 # Release schedule
 
