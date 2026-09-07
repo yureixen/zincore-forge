@@ -7,7 +7,7 @@
 
 # What is it for?
 
-Zincore focuses on adding ReSukiSU and SuSFS on top of stock kernel — without dragging in extra modules or tweaks you never asked for.
+Zincore focuses on adding ReSukiSU and SuSFS on top of a stock kernel — without dragging in extra modules or tweaks you never asked for.
 
 # Compatibility
 
@@ -29,7 +29,7 @@ Zincore focuses on adding ReSukiSU and SuSFS on top of stock kernel — without 
 - SuSFS — an addon root-hiding solution for KernelSU
 
 **nsu**
-- Stock kernel — no additionals
+- Stock kernel — no additions
 
 # Installation
 
@@ -39,7 +39,7 @@ Zincore focuses on adding ReSukiSU and SuSFS on top of stock kernel — without 
 3. Reboot to recovery
 4. Flash or sideload the zip
 5. Reboot to system
-6. Install [ReSukiSU Manager](https://github.com/ReSukiSU/ReSukiSU/releases) if needed.(`ksu` only)
+6. Install [ReSukiSU Manager](https://github.com/ReSukiSU/ReSukiSU/releases) if needed. (`ksu` only)
 
 **Restore to stock**
 1. Reboot to bootloader
@@ -49,7 +49,7 @@ Zincore focuses on adding ReSukiSU and SuSFS on top of stock kernel — without 
 
 # Release schedule
 
-Builds are published **monthly**.Emergency rebuilds may be published if the kernel source or build dependencies change significantly.
+Builds are published **monthly**. Emergency rebuilds may be published if the kernel source or build dependencies change significantly.
 
 # Credits
 
