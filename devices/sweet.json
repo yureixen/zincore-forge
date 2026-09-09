@@ -1,7 +1,7 @@
 {
   "sweet": {
     "kernel_repo": "https://github.com/yureixen/vantom_kernel_xiaomi_sm6150.git",
-    "kernel_branch": "sixteen-qpr2",
+    "kernel_branch": "sixteen",
     "defconfig": "sweet_defconfig",
     "kernel_version": "4.14",
     "arch": "arm64",
