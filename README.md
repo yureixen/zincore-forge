@@ -43,9 +43,9 @@ Zincore focuses on adding ReSukiSU and SuSFS on top of a stock kernel — withou
 
 **Restore to stock**
 1. Reboot to bootloader
-2. `fastboot flash boot boot.img`
-3. `fastboot flash dtbo dtbo.img`
-4. `fastboot reboot`
+2. Flash the stock boot image: `fastboot flash boot boot.img`
+3. Flash the stock dtbo image: `fastboot flash dtbo dtbo.img`
+4. Reboot: `fastboot reboot`
 
 # Release schedule
 
