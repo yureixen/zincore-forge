@@ -17,11 +17,6 @@ Zincore focuses on adding ReSukiSU and SuSFS on top of a stock kernel — withou
 **Supports**
 - Android 13 – 16
 
-**Tested ROMs**
-- [LineageOS](https://lineageos.org/)
-- [PixelOS](https://pixelos.net/)
-- [Project Infinity X](https://projectinfinity-x.com/)
-
 # Features
 
 **ksu**
