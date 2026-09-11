@@ -1,13 +1,11 @@
-# Zincore Builder
+# Zincore Forge
+
+This kernel focuses on adding ReSukiSU and SuSFS on top of a stock kernel — without dragging in extra modules or tweaks you never asked for.
 
 # Disclaimer
 
 ***Your warranty is now void. I am not responsible for bricked devices, dead SD cards, or you getting fired because an alarm failed to work. Please do some research if you have any concerns about features included before flashing it! YOU are choosing to make these modifications, and if you point the finger at me for messing up your device, I will laugh at you.***
 <p align="right">Your typical XDA Forum Disclaimer.</p>
-
-# What is it for?
-
-Zincore focuses on adding ReSukiSU and SuSFS on top of a stock kernel — without dragging in extra modules or tweaks you never asked for.
 
 # Compatibility
 
@@ -17,7 +15,7 @@ Zincore focuses on adding ReSukiSU and SuSFS on top of a stock kernel — withou
 **Supports**
 - Android 13 – 16
 
-# Features
+# Variants
 
 **ksu**
 - ReSukiSU — a KernelSU-based root solution for Android
@@ -44,7 +42,7 @@ Zincore focuses on adding ReSukiSU and SuSFS on top of a stock kernel — withou
 
 # Release schedule
 
-Builds are published **monthly**. Emergency rebuilds may be published if the kernel source or build dependencies change significantly.
+Builds are published **monthly**. Emergency releases may be published when significant changes to the kernel source or build dependencies change significantly.
 
 # Credits
 
