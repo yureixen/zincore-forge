@@ -20,8 +20,6 @@ print(d.get('$1', ''))
 
 KERNEL_REPO=$(read_field kernel_repo)
 KERNEL_BRANCH=$(read_field kernel_branch)
-KERNEL_DEFCONFIG=$(read_field defconfig)
-KERNEL_ARCH=$(read_field arch)
 CLANG_VERSION=$(read_field clang_version)
 CLANG_BRANCH=$(read_field clang_branch)
 
@@ -37,8 +35,6 @@ if [ -z "$CLANG_BRANCH" ]; then
     echo "  https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86 first."
     exit 1
 fi
-
-export KERNEL_REPO KERNEL_BRANCH KERNEL_DEFCONFIG KERNEL_ARCH CLANG_VERSION
 
 echo "→ Device: $DEVICE"
 echo "→ Kernel: $KERNEL_REPO ($KERNEL_BRANCH)"

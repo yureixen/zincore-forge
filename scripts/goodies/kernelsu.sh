@@ -57,7 +57,7 @@ else
     fi
 
     echo "→ Applying SuSFS patch"
-    patch -p1 --fuzz=0 < "$SUSFS_PATCH_FILE" || true
+    patch -p1 --fuzz=3 < "$SUSFS_PATCH_FILE" || true
 
     REJ_FILES=$(find . -name "*.rej" 2>/dev/null || true)
     if [ -n "$REJ_FILES" ]; then
