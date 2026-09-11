@@ -1,6 +1,6 @@
 # Zincore Forge
 
-This kernel focuses on adding ReSukiSU and SuSFS on top of a stock kernel — without dragging in extra modules or tweaks you never asked for.
+Built around one thing: adding ReSukiSU and SuSFS on top of a stock kernel — without dragging in extra modules or tweaks you never asked for.
 
 # Disclaimer
 
@@ -42,7 +42,7 @@ This kernel focuses on adding ReSukiSU and SuSFS on top of a stock kernel — wi
 
 # Release schedule
 
-Builds are published **monthly**. Emergency releases may be published when significant changes to the kernel source or build dependencies change significantly.
+New builds are published monthly. Emergency releases may follow sooner if the kernel source or build dependencies change significantly.
 
 # Credits
 
