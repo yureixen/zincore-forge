@@ -32,6 +32,7 @@ make O="$OUT_DIR" ARCH="$KERNEL_ARCH" "$DEFCONFIG"
 
 # Generic insurance: disable git-dirty auto-suffix
 ./scripts/config --file "${OUT_DIR}/.config" --disable CONFIG_LOCALVERSION_AUTO
+./scripts/config --file "${OUT_DIR}/.config" --disable CONFIG_LOCALVERSION_SHA
 
 # Merge all fragments written by patches.sh / goodies.sh into out/.config
 FRAGMENT_DIR="zincore_fragments"
