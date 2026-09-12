@@ -1,7 +1,7 @@
 {
   "violet": {
     "kernel_repo": "https://github.com/sksifat-4/snowflake_kernel_violet.git",
-    "kernel_branch": "backup",
+    "kernel_branch": "Backup",
     "defconfig": "vendor/violet-perf_defconfig",
     "kernel_version": "4.14",
     "arch": "arm64",
