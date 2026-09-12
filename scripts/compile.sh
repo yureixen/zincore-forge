@@ -1,18 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/common.sh"
+
 DEVICE="${1:?Usage: compile.sh <device> <variant>}"
 VARIANT="${2:?Usage: compile.sh <device> <variant>}"
 DEVICE_JSON="devices/${DEVICE}.json"
 OUT_DIR="out"
 WORKDIR="$(pwd)"
-
-read_field() {
-    python3 -c "
-import json
-print(json.load(open('$DEVICE_JSON'))['$DEVICE'].get('$1', ''))
-"
-}
 
 DEFCONFIG=$(read_field defconfig)
 KERNEL_ARCH=$(read_field arch)
@@ -25,7 +21,7 @@ KERNEL_NAME=$(read_field kernel_name)
 : "${AK3_BRANCH:?ak3_branch missing in $DEVICE_JSON}"
 : "${KERNEL_NAME:?kernel_name missing in $DEVICE_JSON}"
 
-echo "→ Building $DEVICE ($VARIANT) — defconfig: $DEFCONFIG"
+log "Building $DEVICE ($VARIANT) — defconfig: $DEFCONFIG"
 
 # Base defconfig
 mkdir -p "$OUT_DIR"
@@ -42,7 +38,7 @@ FRAGMENT_DIR="zincore_fragments"
 if [ -d "$FRAGMENT_DIR" ]; then
     for FRAGMENT in "$FRAGMENT_DIR"/*.config; do
         [ -f "$FRAGMENT" ] || continue
-        echo "→ Merging fragment: $FRAGMENT"
+        log "Merging fragment: $FRAGMENT"
         ./scripts/config --file "${OUT_DIR}/.config" $(cat "$FRAGMENT")
     done
 fi
@@ -50,12 +46,24 @@ fi
 # Resolve dependencies after all fragment toggles
 make O="$OUT_DIR" ARCH="$KERNEL_ARCH" olddefconfig
 
-# Build (capture full log for the debug artifact)
+# ccache
+if command -v ccache >/dev/null 2>&1; then
+    export CCACHE_DIR="${CCACHE_DIR:-${HOME}/.ccache}"
+    export CCACHE_MAXSIZE="${CCACHE_MAXSIZE:-2G}"
+    export CCACHE_COMPRESS=1
+    log "ccache enabled — dir: $CCACHE_DIR, max size: $CCACHE_MAXSIZE"
+    CC_WRAPPED="ccache clang"
+else
+    warn "ccache not found on PATH — building without a compiler cache"
+    CC_WRAPPED="clang"
+fi
+
+# KCFLAGS: legacy-kernel / modern-clang compatibility shims
 export KCFLAGS="-O2 -Wno-error=implicit-function-declaration -Wno-error=implicit-int -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=incompatible-function-pointer-types"
 
 BUILD_LOG="${WORKDIR}/${DEVICE}-${VARIANT}-build.log"
-echo "→ Compiling (log: $BUILD_LOG)"
-make -j"$(nproc)" O="$OUT_DIR" ARCH="$KERNEL_ARCH" KCFLAGS="$KCFLAGS" 2>&1 | tee "$BUILD_LOG"
+log "Compiling (log: $BUILD_LOG)"
+make -j"$(nproc)" O="$OUT_DIR" ARCH="$KERNEL_ARCH" CC="$CC_WRAPPED" KCFLAGS="$KCFLAGS" 2>&1 | tee "$BUILD_LOG"
 
 # Fail loudly if the kernel image was never produced, even if make "succeeded"
 IMAGE_PATH="${OUT_DIR}/arch/${KERNEL_ARCH}/boot/Image.gz-dtb"
@@ -63,11 +71,9 @@ IMAGE_PATH="${OUT_DIR}/arch/${KERNEL_ARCH}/boot/Image.gz-dtb"
 [ -f "$IMAGE_PATH" ] || IMAGE_PATH="${OUT_DIR}/arch/${KERNEL_ARCH}/boot/Image"
 
 if [ ! -f "$IMAGE_PATH" ]; then
-    echo "✗ No kernel image found at expected paths under ${OUT_DIR}/arch/${KERNEL_ARCH}/boot/"
-    echo "  Build did not actually produce output — check $BUILD_LOG"
-    exit 1
+    die "No kernel image found at expected paths under ${OUT_DIR}/arch/${KERNEL_ARCH}/boot/ — build did not actually produce output, check $BUILD_LOG"
 fi
-echo "→ Kernel image: $IMAGE_PATH"
+log "Kernel image: $IMAGE_PATH"
 
 if [ "$VARIANT" = "ksu" ]; then
     grep -o "ReSukiSU version name: [^ ]*" "$BUILD_LOG" | head -1 | sed -E 's/ReSukiSU version name: //; s/-[0-9a-f]{6,8}@ReSukiSU$//' > "${WORKDIR}/${DEVICE}-resukisu-version.txt" || true
@@ -89,9 +95,9 @@ BOOT_DIR="${OUT_DIR}/arch/${KERNEL_ARCH}/boot"
 for f in dtbo.img dtb.img; do
     if [ -f "${BOOT_DIR}/${f}" ]; then
         cp "${BOOT_DIR}/${f}" "$AK3_DIR/${f%.img}"
-        echo "→ ${f} included (auto-detected)"
+        log "${f} included (auto-detected)"
     else
-        echo "→ ${f} not produced by this build, skipping (not an error)"
+        log "${f} not produced by this build, skipping (not an error)"
     fi
 done
 
@@ -102,6 +108,6 @@ pushd "$AK3_DIR" >/dev/null
 zip -r9 "${WORKDIR}/${ZIP_NAME}" . -x ".git/*" -x "*.zip"
 popd >/dev/null
 
-echo "→ Packaged: ${ZIP_NAME}"
-echo "→ Debug artifacts: ${DEVICE}-${VARIANT}-build.log, ${DEVICE}-${VARIANT}-config"
-echo "→ compile.sh done"
+log "Packaged: ${ZIP_NAME}"
+log "Debug artifacts: ${DEVICE}-${VARIANT}-build.log, ${DEVICE}-${VARIANT}-config"
+log "compile.sh done"
