@@ -12,6 +12,7 @@
     
     "ak3_repo": "https://github.com/yureixen/AnyKernel3.git",
     "ak3_branch": "violet",
+    
     "variants": ["nsu", "ksu"]
   }
 }
