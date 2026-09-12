@@ -1,13 +1,17 @@
 name: Build Kernel
 
 on:
+  # Runs every Friday;
+  schedule:
+    - cron: "0 0 * * 5"
+
   workflow_dispatch:
     inputs:
       device:
-        description: "Device to build"
-        required: true
+        description: "Device to build. Leave EMPTY to build ALL devices."
+        required: false
         type: string
-        default: sweet
+        default: ""
       create_release:
         description: "Create a GitHub Release after build"
         required: true
@@ -15,10 +19,33 @@ on:
         default: false
 
 jobs:
+  gate:
+    runs-on: ubuntu-latest
+    outputs:
+      proceed: ${{ steps.check.outputs.proceed }}
+    steps:
+      - id: check
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            DAY=$(date -u +%d)
+            if [ "$((10#$DAY))" -le 7 ]; then
+              echo "→ Today (day $DAY) is the first Friday of the month — proceeding"
+              echo "proceed=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "→ Cron fired (every Friday) but today (day $DAY) is not the first Friday — skipping this run"
+              echo "proceed=false" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "proceed=true" >> "$GITHUB_OUTPUT"
+          fi
+
   set-matrix:
+    needs: gate
+    if: needs.gate.outputs.proceed == 'true'
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.gen.outputs.matrix }}
+      do_release: ${{ steps.gen.outputs.do_release }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
@@ -27,17 +54,42 @@ jobs:
 
       - id: gen
         run: |
-          DEVICE_JSON="devices/${{ inputs.device }}.json"
-          if [ ! -f "$DEVICE_JSON" ]; then
-            echo "::error::Device '${{ inputs.device }}' not found. Available: $(ls devices/*.json | xargs -n1 basename | sed 's/\.json//' | tr '\n' ' ')"
-            exit 1
+          DEVICE_INPUT="${{ inputs.device || '' }}"
+          EVENT_NAME="${{ github.event_name }}"
+
+          if [ "$EVENT_NAME" = "schedule" ] || [ -z "$DEVICE_INPUT" ]; then
+            echo "→ Building ALL devices (event=$EVENT_NAME, device input='$DEVICE_INPUT')"
+            mapfile -t FILES < <(ls devices/*.json)
+          else
+            DEVICE_JSON="devices/${DEVICE_INPUT}.json"
+            if [ ! -f "$DEVICE_JSON" ]; then
+              echo "::error::Device '$DEVICE_INPUT' not found. Available: $(ls devices/*.json | xargs -n1 basename | sed 's/\.json//' | tr '\n' ' ')"
+              exit 1
+            fi
+            FILES=("$DEVICE_JSON")
+            echo "→ Building single device: $DEVICE_INPUT"
           fi
-          VARIANTS=$(jq -c ".[\"${{ inputs.device }}\"].variants" "$DEVICE_JSON")
-          MATRIX=$(echo "$VARIANTS" | jq -c '{include: [.[] | {variant: .}]}')
+
+          INCLUDE="[]"
+          for f in "${FILES[@]}"; do
+            DEVICE_KEY=$(jq -r 'keys[0]' "$f")
+            ENTRY=$(jq -c --arg d "$DEVICE_KEY" '[.[$d].variants[] | {device: $d, variant: .}]' "$f")
+            INCLUDE=$(jq -c -n --argjson a "$INCLUDE" --argjson b "$ENTRY" '$a + $b')
+          done
+
+          MATRIX=$(jq -c -n --argjson inc "$INCLUDE" '{include: $inc}')
           echo "matrix=$MATRIX" >> "$GITHUB_OUTPUT"
+          echo "→ Matrix: $MATRIX"
+
+          if [ "$EVENT_NAME" = "schedule" ]; then
+            echo "do_release=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "do_release=${{ inputs.create_release }}" >> "$GITHUB_OUTPUT"
+          fi
 
   build:
-    needs: set-matrix
+    needs: [gate, set-matrix]
+    if: needs.gate.outputs.proceed == 'true'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -57,13 +109,38 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential bc cpio flex bison libssl-dev \
-            libelf-dev dwarves zip curl git python3 rsync
+            libelf-dev dwarves zip curl git python3 rsync jq ccache
+
+      - name: Read device config
+        id: devcfg
+        run: |
+          DEVICE_JSON="builder/devices/${{ matrix.device }}.json"
+          {
+            echo "kernel_repo=$(jq -r '.["'"${{ matrix.device }}"'"].kernel_repo' "$DEVICE_JSON")"
+            echo "kernel_branch=$(jq -r '.["'"${{ matrix.device }}"'"].kernel_branch' "$DEVICE_JSON")"
+            echo "clang_version=$(jq -r '.["'"${{ matrix.device }}"'"].clang_version' "$DEVICE_JSON")"
+            echo "kernel_version=$(jq -r '.["'"${{ matrix.device }}"'"].kernel_version' "$DEVICE_JSON")"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Clone kernel source
         run: |
-          KERNEL_REPO=$(python3 -c "import json;print(json.load(open('builder/devices/${{ inputs.device }}.json'))['${{ inputs.device }}']['kernel_repo'])")
-          KERNEL_BRANCH=$(python3 -c "import json;print(json.load(open('builder/devices/${{ inputs.device }}.json'))['${{ inputs.device }}']['kernel_branch'])")
-          git clone --depth 1 -b "$KERNEL_BRANCH" "$KERNEL_REPO" kernel_src
+          git clone --depth 1 -b "${{ steps.devcfg.outputs.kernel_branch }}" \
+            "${{ steps.devcfg.outputs.kernel_repo }}" kernel_src
+
+      # Persists the extracted clang toolchain across CI runs
+      - name: Cache toolchain
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: kernel_src/toolchain/clang-${{ steps.devcfg.outputs.clang_version }}
+          key: toolchain-clang-${{ steps.devcfg.outputs.clang_version }}
+
+      # Persists ccache's object cache across CI runs
+      - name: Set up ccache
+        uses: hendrikmuhs/ccache-action@f09c25b45002a07be2955cbe52e8cee55643f89d
+        with:
+          key: ccache-${{ matrix.device }}-${{ matrix.variant }}
+          max-size: 2G
+          create-symlink: false
 
       - name: Stage builder files into kernel source
         run: |
@@ -71,15 +148,23 @@ jobs:
           cp -r builder/scripts kernel_src/
           cp builder/config.env kernel_src/
 
-      - name: Build (${{ inputs.device }} / ${{ matrix.variant }})
+      # Catches a wrong kernel_version in devices/*.json
+      - name: Preflight — verify declared kernel version
+        working-directory: kernel_src
+        run: |
+          set -euo pipefail
+          source scripts/common.sh
+          verify_kernel_version "${{ steps.devcfg.outputs.kernel_version }}"
+
+      - name: Build (${{ matrix.device }} / ${{ matrix.variant }})
         working-directory: kernel_src
         run: |
           set -euo pipefail
           source config.env
-          source scripts/env.sh "${{ inputs.device }}"
+          source scripts/env.sh "${{ matrix.device }}"
           bash scripts/patches.sh
-          bash scripts/goodies.sh "${{ inputs.device }}" "${{ matrix.variant }}"
-          bash scripts/compile.sh "${{ inputs.device }}" "${{ matrix.variant }}"
+          bash scripts/goodies.sh "${{ matrix.device }}" "${{ matrix.variant }}"
+          bash scripts/compile.sh "${{ matrix.device }}" "${{ matrix.variant }}"
 
       - name: Package patch rejects (on failure)
         if: failure()
@@ -94,14 +179,15 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: zincore-${{ inputs.device }}-${{ matrix.variant }}-rejects
+          name: zincore-${{ matrix.device }}-${{ matrix.variant }}-rejects
           path: patch-rejects.tar.gz
           if-no-files-found: ignore
+
       - name: Diagnose known build failures
         if: failure()
         working-directory: kernel_src
         run: |
-          LOG="${{ inputs.device }}-${{ matrix.variant }}-build.log"
+          LOG="${{ matrix.device }}-${{ matrix.variant }}-build.log"
           if [ -f "$LOG" ]; then
             if grep -q "You disabled CONFIG_KALLSYMS_ALL" "$LOG"; then
               echo "::error::Known issue — ReSukiSU static-symbol export missing/incomplete. Check kernelsu.sh's unstatic() block and CONFIG_KALLSYMS/CONFIG_KALLSYMS_ALL."
@@ -116,26 +202,26 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: zincore-${{ inputs.device }}-${{ matrix.variant }}
+          name: zincore-${{ matrix.device }}-${{ matrix.variant }}
           path: |
-            kernel_src/zincore-${{ inputs.device }}-${{ matrix.variant }}-*.zip
-            kernel_src/${{ inputs.device }}-${{ matrix.variant }}-build.log
-            kernel_src/${{ inputs.device }}-${{ matrix.variant }}-config
+            kernel_src/zincore-${{ matrix.device }}-${{ matrix.variant }}-*.zip
+            kernel_src/${{ matrix.device }}-${{ matrix.variant }}-build.log
+            kernel_src/${{ matrix.device }}-${{ matrix.variant }}-config
           if-no-files-found: error
 
       - name: Upload KSU version info
         if: matrix.variant == 'ksu'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: zincore-${{ inputs.device }}-${{ matrix.variant }}-versions
+          name: zincore-${{ matrix.device }}-${{ matrix.variant }}-versions
           path: |
-            kernel_src/${{ inputs.device }}-resukisu-version.txt
-            kernel_src/${{ inputs.device }}-susfs-version.txt
+            kernel_src/${{ matrix.device }}-resukisu-version.txt
+            kernel_src/${{ matrix.device }}-susfs-version.txt
           if-no-files-found: error
 
   release:
-    needs: build
-    if: ${{ inputs.create_release }}
+    needs: [gate, set-matrix, build]
+    if: ${{ needs.gate.outputs.proceed == 'true' && needs.set-matrix.outputs.do_release == 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -155,12 +241,19 @@ jobs:
         run: |
           {
             echo "> [!NOTE]"
-            if ls final/*-resukisu-version.txt >/dev/null 2>&1; then
-              echo "> - ReSukiSU Version: $(cat final/*-resukisu-version.txt)"
-            fi
-            if ls final/*-susfs-version.txt >/dev/null 2>&1; then
-              echo "> - SuSFS Version: $(cat final/*-susfs-version.txt)"
-            fi
+            echo "> Per-device versions:"
+            for f in final/*-resukisu-version.txt; do
+              [ -f "$f" ] || continue
+              DEVICE_NAME=$(basename "$f" -resukisu-version.txt)
+              RESUKISU_VER=$(cat "$f")
+              SUSFS_FILE="final/${DEVICE_NAME}-susfs-version.txt"
+              if [ -f "$SUSFS_FILE" ]; then
+                SUSFS_VER=$(cat "$SUSFS_FILE")
+              else
+                SUSFS_VER="unknown"
+              fi
+              echo ">   - ${DEVICE_NAME}: ReSukiSU ${RESUKISU_VER}, SuSFS ${SUSFS_VER}"
+            done
             echo ""
             echo "> [!CAUTION]"
             echo "> - Always back up your boot.img before flashing!"
@@ -171,9 +264,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          DATE=$(date +'%Y/%m/%d')
-          gh release create "${{ inputs.device }}-${{ github.run_id }}" \
+          DATE=$(date +'%Y-%m-%d')
+          gh release create "zincore-${DATE}-${{ github.run_id }}" \
             --repo "${{ github.repository }}" \
-            --title "zincore-${{ inputs.device }} - ${DATE}" \
+            --title "zincore-forge build - ${DATE}" \
             --notes-file release_notes.md \
             final/*.zip
