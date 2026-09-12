@@ -217,6 +217,7 @@ jobs:
           path: |
             kernel_src/${{ matrix.device }}-resukisu-version.txt
             kernel_src/${{ matrix.device }}-susfs-version.txt
+            kernel_src/${{ matrix.device }}-resukisu-managers.txt
           if-no-files-found: error
 
   release:
@@ -241,19 +242,12 @@ jobs:
         run: |
           {
             echo "> [!NOTE]"
-            echo "> Per-device versions:"
-            for f in final/*-resukisu-version.txt; do
-              [ -f "$f" ] || continue
-              DEVICE_NAME=$(basename "$f" -resukisu-version.txt)
-              RESUKISU_VER=$(cat "$f")
-              SUSFS_FILE="final/${DEVICE_NAME}-susfs-version.txt"
-              if [ -f "$SUSFS_FILE" ]; then
-                SUSFS_VER=$(cat "$SUSFS_FILE")
-              else
-                SUSFS_VER="unknown"
-              fi
-              echo ">   - ${DEVICE_NAME}: ReSukiSU ${RESUKISU_VER}, SuSFS ${SUSFS_VER}"
-            done
+            RESUKISU_FILE=$(ls final/*-resukisu-version.txt 2>/dev/null | head -1)
+            SUSFS_FILE=$(ls final/*-susfs-version.txt 2>/dev/null | head -1)
+            MANAGERS_FILE=$(ls final/*-resukisu-managers.txt 2>/dev/null | head -1)
+            [ -n "$RESUKISU_FILE" ] && echo "> ReSukiSU: $(cat "$RESUKISU_FILE")"
+            [ -n "$SUSFS_FILE" ] && echo "> SuSFS: $(cat "$SUSFS_FILE")"
+            [ -n "$MANAGERS_FILE" ] && echo "> Supported managers: $(cat "$MANAGERS_FILE")"
             echo ""
             echo "> [!CAUTION]"
             echo "> - Always back up your boot.img before flashing!"
