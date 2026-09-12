@@ -245,9 +245,9 @@ jobs:
             RESUKISU_FILE=$(ls final/*-resukisu-version.txt 2>/dev/null | head -1)
             SUSFS_FILE=$(ls final/*-susfs-version.txt 2>/dev/null | head -1)
             MANAGERS_FILE=$(ls final/*-resukisu-managers.txt 2>/dev/null | head -1)
-            [ -n "$RESUKISU_FILE" ] && echo "> ReSukiSU: $(cat "$RESUKISU_FILE")"
-            [ -n "$SUSFS_FILE" ] && echo "> SuSFS: $(cat "$SUSFS_FILE")"
-            [ -n "$MANAGERS_FILE" ] && echo "> Supported managers: $(cat "$MANAGERS_FILE")"
+            [ -n "$RESUKISU_FILE" ] && echo "> ReSukiSU Version: $(cat "$RESUKISU_FILE")"
+            [ -n "$SUSFS_FILE" ] && echo "> SuSFS Version: $(cat "$SUSFS_FILE")"
+            [ -n "$MANAGERS_FILE" ] && echo "> Supported Managers: $(cat "$MANAGERS_FILE")"
             echo ""
             echo "> [!CAUTION]"
             echo "> - Always back up your boot.img before flashing!"
