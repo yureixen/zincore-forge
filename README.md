@@ -2,11 +2,6 @@
 
 Built around one thing: adding ReSukiSU and SuSFS on top of a stock kernel — without dragging in extra modules or tweaks you never asked for.
 
-# Disclaimer
-
-***Your warranty is now void. I am not responsible for bricked devices, dead SD cards, or you getting fired because an alarm failed to work. Please do some research if you have any concerns about features included before flashing it! YOU are choosing to make these modifications, and if you point the finger at me for messing up your device, I will laugh at you.***
-<p align="right">Your typical XDA Forum Disclaimer.</p>
-
 # Compatibility
 
 **Device**
@@ -23,6 +18,11 @@ Built around one thing: adding ReSukiSU and SuSFS on top of a stock kernel — w
 
 **nsu**
 - Stock kernel — no additions
+
+# Disclaimer
+
+***Your warranty is now void. I am not responsible for bricked devices, dead SD cards, or you getting fired because an alarm failed to work. Please do some research if you have any concerns about features included before flashing it! YOU are choosing to make these modifications, and if you point the finger at me for messing up your device, I will laugh at you.***
+<p align="right">Your typical XDA Forum Disclaimer.</p>
 
 # Installation
 
