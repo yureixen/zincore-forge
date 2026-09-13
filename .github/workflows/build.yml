@@ -248,12 +248,27 @@ jobs:
         run: |
           {
             echo "> [!NOTE]"
-            RESUKISU_FILE=$(ls final/*-resukisu-version.txt 2>/dev/null | head -1)
-            SUSFS_FILE=$(ls final/*-susfs-version.txt 2>/dev/null | head -1)
-            MANAGERS_FILE=$(ls final/*-resukisu-managers.txt 2>/dev/null | head -1)
-            [ -n "$RESUKISU_FILE" ] && echo "> ReSukiSU Version: $(cat "$RESUKISU_FILE")"
-            [ -n "$SUSFS_FILE" ] && echo "> SuSFS Version: $(cat "$SUSFS_FILE")"
-            [ -n "$MANAGERS_FILE" ] && echo "> Supported Managers: $(cat "$MANAGERS_FILE")"
+            # All devices share one globally-pinned ReSukiSU/SuSFS commit
+            # (config.env) — so their version strings SHOULD be identical
+            # across every device. We verify that instead of assuming it:
+            # if they ever diverge, something is wrong and needs looking at.
+            RESUKISU_UNIQUE=$(cat final/*-resukisu-version.txt 2>/dev/null | sort -u)
+            SUSFS_UNIQUE=$(cat final/*-susfs-version.txt 2>/dev/null | sort -u)
+            MANAGERS_UNIQUE=$(cat final/*-resukisu-managers.txt 2>/dev/null | sort -u)
+
+            RESUKISU_LINES=$(echo "$RESUKISU_UNIQUE" | grep -c . || true)
+            SUSFS_LINES=$(echo "$SUSFS_UNIQUE" | grep -c . || true)
+
+            if [ "$RESUKISU_LINES" -gt 1 ]; then
+              echo "::warning::ReSukiSU version differs across devices despite a single global pin — investigate: $(echo "$RESUKISU_UNIQUE" | tr '\n' ' ')"
+            fi
+            if [ "$SUSFS_LINES" -gt 1 ]; then
+              echo "::warning::SuSFS version differs across devices despite a single global pin — investigate: $(echo "$SUSFS_UNIQUE" | tr '\n' ' ')"
+            fi
+
+            [ -n "$RESUKISU_UNIQUE" ] && echo "> ReSukiSU Version: $(echo "$RESUKISU_UNIQUE" | head -1)"
+            [ -n "$SUSFS_UNIQUE" ] && echo "> SuSFS Version: $(echo "$SUSFS_UNIQUE" | head -1)"
+            [ -n "$MANAGERS_UNIQUE" ] && echo "> Supported Managers: $(echo "$MANAGERS_UNIQUE" | head -1)"
             echo ""
             echo "> [!CAUTION]"
             echo "> - Always back up your boot.img before flashing!"
