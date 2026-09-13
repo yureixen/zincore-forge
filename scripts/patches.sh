@@ -11,7 +11,7 @@ mkdir -p "$FRAGMENT_DIR"
 
 log "Building generic config fragment..."
 
-# MODVERSIONS: not needed for a monolithic non-modular boot setup on this
+# MODVERSIONS: not needed for a monolithic non-modular boot setup
 fragment_add "$FRAGMENT_FILE" "-d CONFIG_MODVERSIONS"
 
 # LTO mode, driven by config.env
