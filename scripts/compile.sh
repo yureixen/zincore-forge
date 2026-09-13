@@ -25,7 +25,7 @@ log "Building $DEVICE ($VARIANT) — defconfig: $DEFCONFIG"
 
 # Base defconfig
 mkdir -p "$OUT_DIR"
-make O="$OUT_DIR" ARCH="$KERNEL_ARCH" "$DEFCONFIG"
+make O="$OUT_DIR" ARCH="$KERNEL_ARCH" $DEFCONFIG
 
 # Full kernel name control from builder
 ./scripts/config --file "${OUT_DIR}/.config" --set-str CONFIG_LOCALVERSION "-${KERNEL_NAME}-${VARIANT}-zincore"
