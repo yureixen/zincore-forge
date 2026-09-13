@@ -1,11 +1,11 @@
 {
   "violet": {
-    "kernel_repo": "https://github.com/sksifat-4/snowflake_kernel_violet.git",
-    "kernel_branch": "Backup",
-    "defconfig": "vendor/violet-perf_defconfig",
+    "kernel_repo": "https://github.com/LineageOS/android_kernel_xiaomi_sm6150.git",
+    "kernel_branch": "lineage-23.2",
+    "defconfig": "vendor/sdmsteppe-perf_defconfig vendor/violet.config",
     "kernel_version": "4.14",
     "arch": "arm64",
-    "kernel_name": "Snowflake",
+    "kernel_name": "perf",
     
     "clang_version": "r563880c",
     "clang_branch": "android16-qpr2-release",
