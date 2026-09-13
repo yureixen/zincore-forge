@@ -271,7 +271,7 @@ jobs:
             [ -n "$MANAGERS_UNIQUE" ] && echo "> Supported Managers: $(echo "$MANAGERS_UNIQUE" | head -1)"
             echo ""
             echo "> [!CAUTION]"
-            echo "> - Always back up your boot.img before flashing!"
+            echo "> - Always backup your boot and dtbo image before flashing!"
           } > release_notes.md
           cat release_notes.md
 
