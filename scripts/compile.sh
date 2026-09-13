@@ -25,7 +25,8 @@ log "Building $DEVICE ($VARIANT) — defconfig: $DEFCONFIG"
 
 # Base defconfig
 mkdir -p "$OUT_DIR"
-make O="$OUT_DIR" ARCH="$KERNEL_ARCH" $DEFCONFIG
+LLVM_TOOLS="LD=ld.lld AR=llvm-ar NM=llvm-nm OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump STRIP=llvm-strip ld-name=lld"
+make O="$OUT_DIR" ARCH="$KERNEL_ARCH" $LLVM_TOOLS $DEFCONFIG
 
 # Full kernel name control from builder
 ./scripts/config --file "${OUT_DIR}/.config" --set-str CONFIG_LOCALVERSION "-${KERNEL_NAME}-${VARIANT}-zincore"
@@ -45,7 +46,7 @@ if [ -d "$FRAGMENT_DIR" ]; then
 fi
 
 # Resolve dependencies after all fragment toggles
-make O="$OUT_DIR" ARCH="$KERNEL_ARCH" olddefconfig
+make O="$OUT_DIR" ARCH="$KERNEL_ARCH" $LLVM_TOOLS olddefconfig
 
 # ccache
 if command -v ccache >/dev/null 2>&1; then
@@ -64,7 +65,7 @@ export KCFLAGS="-O2 -Wno-error=implicit-function-declaration -Wno-error=implicit
 
 BUILD_LOG="${WORKDIR}/${DEVICE}-${VARIANT}-build.log"
 log "Compiling (log: $BUILD_LOG)"
-make -j"$(nproc)" O="$OUT_DIR" ARCH="$KERNEL_ARCH" CC="$CC_WRAPPED" KCFLAGS="$KCFLAGS" 2>&1 | tee "$BUILD_LOG"
+make -j"$(nproc)" O="$OUT_DIR" ARCH="$KERNEL_ARCH" CC="$CC_WRAPPED" $LLVM_TOOLS KCFLAGS="$KCFLAGS" 2>&1 | tee "$BUILD_LOG"
 
 # Fail loudly if the kernel image was never produced, even if make "succeeded"
 IMAGE_PATH="${OUT_DIR}/arch/${KERNEL_ARCH}/boot/Image.gz-dtb"
