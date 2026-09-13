@@ -199,14 +199,20 @@ jobs:
             echo "::warning::Build log not found, cannot run diagnosis."
           fi
 
-      - name: Upload build artifacts
+      - name: Upload flashable zip
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: zincore-${{ matrix.device }}-${{ matrix.variant }}
+          path: kernel_src/zincore-*.zip
+          if-no-files-found: error
+
+      - name: Upload debug artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: zincore-${{ matrix.device }}-${{ matrix.variant }}-debug
           path: |
-            kernel_src/zincore-${{ matrix.device }}-${{ matrix.variant }}-*.zip
-            kernel_src/${{ matrix.device }}-${{ matrix.variant }}-build.log
-            kernel_src/${{ matrix.device }}-${{ matrix.variant }}-config
+            kernel_src/*-build.log
+            kernel_src/*-config
           if-no-files-found: error
 
       - name: Upload KSU version info
