@@ -32,6 +32,7 @@ make O="$OUT_DIR" ARCH="$KERNEL_ARCH" $LLVM_TOOLS $DEFCONFIG
 ./scripts/config --file "${OUT_DIR}/.config" --set-str CONFIG_LOCALVERSION "-${KERNEL_NAME}-${VARIANT}-zincore"
 
 # Generic insurance: disable git-dirty auto-suffix
+export LOCALVERSION=
 ./scripts/config --file "${OUT_DIR}/.config" --disable CONFIG_LOCALVERSION_AUTO
 ./scripts/config --file "${OUT_DIR}/.config" --disable CONFIG_LOCALVERSION_SHA
 
