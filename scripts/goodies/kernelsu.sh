@@ -54,12 +54,29 @@ else
 
     REJ_FILES=$(find . -name "*.rej" 2>/dev/null || true)
     if [ -n "$REJ_FILES" ]; then
-        warn "SuSFS patch produced rejected hunks — build stopped, NOT continuing silently:"
+        warn "SuSFS patch produced rejected hunks — attempting known self-heals before giving up:"
         warn "$REJ_FILES"
-        warn "Each .rej file above shows the exact hunk that failed to apply."
-        die "These must be resolved manually against this kernel tree before a KSU build can be trusted."
+        if [ -f "fs/namei.c.rej" ] && grep -q "CONFIG_KSU_SUSFS_OPEN_REDIRECT" "fs/namei.c.rej" \
+           && ! grep -A2 "^static int do_o_path" fs/namei.c | grep -q "CONFIG_KSU_SUSFS_OPEN_REDIRECT"; then
+            log "Known gap: do_o_path()/vfs_open() arity mismatch — self-healing from this tree's actual signature"
+            if python3 "${SCRIPT_DIR}/goodies/selfheal_vfs_open.py"; then
+                rm -f fs/namei.c.rej
+            else
+                warn "self-heal script did not find the expected shape — leaving fs/namei.c.rej for manual review"
+            fi
+        fi
+
+        REJ_FILES=$(find . -name "*.rej" 2>/dev/null || true)
+        if [ -n "$REJ_FILES" ]; then
+            warn "Unresolved rejected hunks remain after self-heal attempts:"
+            warn "$REJ_FILES"
+            warn "Each .rej file above shows the exact hunk that failed to apply."
+            die "These must be resolved manually against this kernel tree before a KSU build can be trusted."
+        fi
+        log "All rejected hunks were resolved via known self-heals"
+    else
+        log "SuSFS patch applied cleanly, no rejects"
     fi
-    log "SuSFS patch applied cleanly, no rejects"
 fi
 
 # Manual hook script
@@ -69,11 +86,25 @@ grep -o "Current susfs patch version:[0-9.]*" /tmp/zincore_susfs_hook.log | head
 
 # Core config fragment (structural — merged into out/.config by compile.sh)
 log "Patching static symbol exports required by ReSukiSU"
+
+UNSTATIC_APPLIED=0
+UNSTATIC_TOTAL=0
+
 unstatic() {
     local file="$1" regex="$2"
-    if [ -f "$file" ] && grep -q "static $regex" "$file" 2>/dev/null; then
+    UNSTATIC_TOTAL=$((UNSTATIC_TOTAL + 1))
+
+    if [ ! -f "$file" ]; then
+        warn "unstatic: $file not found in this tree — skipping '$regex' (expected if this kernel's source layout differs)"
+        return
+    fi
+
+    if grep -q "static $regex" "$file" 2>/dev/null; then
         sed -i "s/static $regex/$regex/" "$file"
         log "  exported: $regex ($file)"
+        UNSTATIC_APPLIED=$((UNSTATIC_APPLIED + 1))
+    else
+        warn "  not found as 'static $regex' in $file — already non-static, or this kernel tree's SELinux code differs from what this pattern expects"
     fi
 }
 unstatic "security/selinux/selinuxfs.c" "ssize_t (\*write_op\[\])"
@@ -83,6 +114,11 @@ unstatic "security/selinux/ss/services.c" "struct page \*selinux_status_page;"
 unstatic "security/selinux/ss/services.c" "DEFINE_MUTEX(selinux_status_lock);"
 unstatic "security/selinux/ss/services.c" "DEFINE_RWLOCK(policy_rwlock);"
 unstatic "security/selinux/hooks.c" "struct security_operations selinux_ops"
+
+log "Static-symbol export summary: ${UNSTATIC_APPLIED}/${UNSTATIC_TOTAL} applied"
+if [ "$UNSTATIC_APPLIED" -lt "$UNSTATIC_TOTAL" ]; then
+    warn "$((UNSTATIC_TOTAL - UNSTATIC_APPLIED)) pattern(s) above were NOT applied — this is expected if they're already non-static in this tree, but if this is a NEW kernel source (different repo/version than previously verified), manually confirm ReSukiSU actually has the symbol access it needs before trusting this build."
+fi
 
 fragment_add "$FRAGMENT_FILE" "-e CONFIG_KSU"
 fragment_add "$FRAGMENT_FILE" "-e CONFIG_KSU_SUSFS"
