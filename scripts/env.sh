@@ -51,6 +51,14 @@ export PATH="${CLANG_DIR}/bin:${PATH}"
 export LLVM=1
 export LLVM_IAS=1
 
+KERNEL_ARCH=$(read_field arch)
+...
+[ -n "$KERNEL_ARCH" ] || die "No arch set in $DEVICE_JSON for device '$DEVICE'"
+
+if [ "$KERNEL_ARCH" != "arm64" ]; then
+    die "env.sh only supports arch=arm64 — device '$DEVICE' declares arch='$KERNEL_ARCH'."
+fi
+
 export CLANG_TRIPLE=aarch64-linux-gnu-
 export CROSS_COMPILE=aarch64-linux-gnu-
 export CROSS_COMPILE_COMPAT=arm-linux-gnueabi-
