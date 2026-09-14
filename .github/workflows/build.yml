@@ -172,9 +172,11 @@ jobs:
           set -euo pipefail
           source config.env
           source scripts/env.sh "${{ matrix.device }}"
-              bash scripts/patches.sh "${{ matrix.device }}"
+          bash scripts/run_hook.sh "${{ matrix.device }}" pre
+          bash scripts/patches.sh "${{ matrix.device }}"
           bash scripts/goodies.sh "${{ matrix.device }}" "${{ matrix.variant }}"
           bash scripts/compile.sh "${{ matrix.device }}" "${{ matrix.variant }}"
+          bash scripts/run_hook.sh "${{ matrix.device }}" post
 
       - name: Package patch rejects (on failure)
         if: failure()
