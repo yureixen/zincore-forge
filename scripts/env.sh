@@ -13,6 +13,12 @@ KERNEL_REPO=$(read_field kernel_repo)
 KERNEL_BRANCH=$(read_field kernel_branch)
 CLANG_VERSION=$(read_field clang_version)
 CLANG_BRANCH=$(read_field clang_branch)
+KERNEL_ARCH=$(read_field arch)
+
+[ -n "$KERNEL_ARCH" ] || die "No arch set in $DEVICE_JSON for device '$DEVICE'"
+if [ "$KERNEL_ARCH" != "arm64" ]; then
+    die "env.sh only supports arch=arm64 — device '$DEVICE' declares arch='$KERNEL_ARCH'."
+fi
 
 [ -n "$CLANG_VERSION" ] || die "No clang_version set in $DEVICE_JSON for device '$DEVICE'"
 
