@@ -14,6 +14,13 @@ log "Building generic config fragment..."
 # MODVERSIONS: not needed for a monolithic non-modular boot setup
 fragment_add "$FRAGMENT_FILE" "-d CONFIG_MODVERSIONS"
 
+DEVICE="${1:-}"
+if [ -n "$DEVICE" ] && [ -f "devices/${DEVICE}.json" ]; then
+    DEVICE_JSON="devices/${DEVICE}.json"
+    DEVICE_LTO_OVERRIDE=$(read_field lto_mode)
+    [ -n "$DEVICE_LTO_OVERRIDE" ] && LTO_MODE="$DEVICE_LTO_OVERRIDE"
+fi
+
 # LTO mode, driven by config.env
 : "${LTO_MODE:?LTO_MODE is not set — source config.env before running patches.sh}"
 
@@ -37,6 +44,15 @@ case "$LTO_MODE" in
         die "Unknown LTO_MODE '$LTO_MODE' — expected thin|full|none"
         ;;
 esac
+
+# CFI/Shadow-Call-Stack — enable only if THIS kernel's own Kconfig supports
+if grep -rq "CONFIG_CFI_CLANG" arch/arm64/Kconfig 2>/dev/null; then
+    fragment_add "$FRAGMENT_FILE" "-e CONFIG_CFI_CLANG"
+    fragment_add "$FRAGMENT_FILE" "-e CONFIG_CFI_CLANG_SHADOW"
+    log "CFI supported by this kernel's Kconfig — enabled"
+else
+    warn "CONFIG_CFI_CLANG not found in this kernel's Kconfig — skipping (not an error, just unsupported on this tree)"
+fi
 
 log "Fragment written: $FRAGMENT_FILE (LTO_MODE=$LTO_MODE)"
 cat "$FRAGMENT_FILE"
