@@ -127,6 +127,16 @@ jobs:
           git clone --depth 1 -b "${{ steps.devcfg.outputs.kernel_branch }}" \
             "${{ steps.devcfg.outputs.kernel_repo }}" kernel_src
 
+      - name: Clone extra sources (if declared)
+        run: |
+          EXTRA=$(jq -c '.["'"${{ matrix.device }}"'"].extra_sources // []' "builder/devices/${{ matrix.device }}.json")
+          echo "$EXTRA" | jq -c '.[]' | while read -r src; do
+            repo=$(echo "$src" | jq -r '.repo')
+            branch=$(echo "$src" | jq -r '.branch')
+            path=$(echo "$src" | jq -r '.path')
+            git clone --depth 1 -b "$branch" "$repo" "kernel_src/$path"
+          done
+
       # Persists the extracted clang toolchain across CI runs
       - name: Cache toolchain
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
@@ -162,7 +172,7 @@ jobs:
           set -euo pipefail
           source config.env
           source scripts/env.sh "${{ matrix.device }}"
-          bash scripts/patches.sh
+              bash scripts/patches.sh "${{ matrix.device }}"
           bash scripts/goodies.sh "${{ matrix.device }}" "${{ matrix.variant }}"
           bash scripts/compile.sh "${{ matrix.device }}" "${{ matrix.variant }}"
 
