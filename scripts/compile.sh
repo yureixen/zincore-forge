@@ -26,6 +26,8 @@ log "Building $DEVICE ($VARIANT) — defconfig: $DEFCONFIG"
 # Base defconfig
 mkdir -p "$OUT_DIR"
 LLVM_TOOLS="LD=ld.lld AR=llvm-ar NM=llvm-nm OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump STRIP=llvm-strip ld-name=lld"
+EXTRA_MAKE_ARGS=$(read_field extra_make_args)
+LLVM_TOOLS="$LLVM_TOOLS $EXTRA_MAKE_ARGS"
 make O="$OUT_DIR" ARCH="$KERNEL_ARCH" $LLVM_TOOLS $DEFCONFIG
 
 # Full kernel name control from builder
