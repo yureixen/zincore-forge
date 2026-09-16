@@ -52,28 +52,12 @@ else
     log "Applying SuSFS patch"
     patch -p1 --fuzz=3 < "$SUSFS_PATCH_FILE" || true
 
-    REJ_FILES=$(find . -name "*.rej" 2>/dev/null || true)
+    REJ_FILES=$(find . -path ./.zincore_deps -prune -o -name "*.rej" -print 2>/dev/null || true)
     if [ -n "$REJ_FILES" ]; then
-        warn "SuSFS patch produced rejected hunks — attempting known self-heals before giving up:"
+        warn "SuSFS patch produced rejected hunks:"
         warn "$REJ_FILES"
-        if [ -f "fs/namei.c.rej" ] && grep -q "CONFIG_KSU_SUSFS_OPEN_REDIRECT" "fs/namei.c.rej" \
-           && ! grep -A2 "^static int do_o_path" fs/namei.c | grep -q "CONFIG_KSU_SUSFS_OPEN_REDIRECT"; then
-            log "Known gap: do_o_path()/vfs_open() arity mismatch — self-healing from this tree's actual signature"
-            if python3 "${SCRIPT_DIR}/goodies/selfheal_vfs_open.py"; then
-                rm -f fs/namei.c.rej
-            else
-                warn "self-heal script did not find the expected shape — leaving fs/namei.c.rej for manual review"
-            fi
-        fi
-
-        REJ_FILES=$(find . -name "*.rej" 2>/dev/null || true)
-        if [ -n "$REJ_FILES" ]; then
-            warn "Unresolved rejected hunks remain after self-heal attempts:"
-            warn "$REJ_FILES"
-            warn "Each .rej file above shows the exact hunk that failed to apply."
-            die "These must be resolved manually against this kernel tree before a KSU build can be trusted."
-        fi
-        log "All rejected hunks were resolved via known self-heals"
+        warn "Each .rej file above shows the exact hunk that failed to apply."
+        die "These must be resolved manually against this kernel tree before a KSU build can be trusted."
     else
         log "SuSFS patch applied cleanly, no rejects"
     fi
