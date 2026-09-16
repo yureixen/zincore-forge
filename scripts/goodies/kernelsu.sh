@@ -23,12 +23,16 @@ SUSFS_SRC="${WORKDIR}/.zincore_deps/susfs"
 mkdir -p "$(dirname "$KSU_SRC")"
 
 log "Cloning ReSukiSU (pinned to ${KSU_REPO_PIN})"
-git clone --quiet "$KSU_REPO_URL" "$KSU_SRC"
-git -C "$KSU_SRC" checkout --quiet "$KSU_REPO_PIN"
+git init --quiet "$KSU_SRC"
+git -C "$KSU_SRC" remote add origin "$KSU_REPO_URL"
+git -C "$KSU_SRC" fetch --quiet --depth 1 origin "$KSU_REPO_PIN"
+git -C "$KSU_SRC" checkout --quiet FETCH_HEAD
 
 log "Cloning SuSFS source (JackA1ltman, pinned to ${SUSFS_REPO_PIN})"
-git clone --quiet "$SUSFS_REPO_URL" "$SUSFS_SRC"
-git -C "$SUSFS_SRC" checkout --quiet "$SUSFS_REPO_PIN"
+git init --quiet "$SUSFS_SRC"
+git -C "$SUSFS_SRC" remote add origin "$SUSFS_REPO_URL"
+git -C "$SUSFS_SRC" fetch --quiet --depth 1 origin "$SUSFS_REPO_PIN"
+git -C "$SUSFS_SRC" checkout --quiet FETCH_HEAD
 
 FRAGMENT_DIR="zincore_fragments"
 FRAGMENT_FILE="${FRAGMENT_DIR}/kernelsu.config"
