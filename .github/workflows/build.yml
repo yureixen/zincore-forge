@@ -177,7 +177,7 @@ jobs:
         if: failure()
         working-directory: kernel_src
         run: |
-          REJECTS=$(-path ./.zincore_deps -prune -o)
+          REJECTS=$(find . -path ./.zincore_deps -prune -o -name '*.rej' -print 2>/dev/null || true)
           if [ -n "$REJECTS" ]; then
             tar -czf ../patch-rejects.tar.gz $REJECTS
           fi
