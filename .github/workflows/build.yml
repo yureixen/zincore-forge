@@ -214,13 +214,14 @@ jobs:
           if-no-files-found: error
 
       - name: Upload debug artifacts
+        if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: zincore-${{ matrix.device }}-${{ matrix.variant }}-debug
           path: |
             kernel_src/*-build.log
             kernel_src/*-config
-          if-no-files-found: error
+          if-no-files-found: warn
 
       - name: Upload KSU version info
         if: matrix.variant == 'ksu'
