@@ -54,7 +54,13 @@ else
     fi
 
     log "Applying SuSFS patch"
-    patch -p1 --fuzz=3 < "$SUSFS_PATCH_FILE" || true
+    set +e
+    patch -p1 --fuzz=3 < "$SUSFS_PATCH_FILE"
+    PATCH_RC=$?
+    set -e
+    if [ "$PATCH_RC" -gt 1 ]; then
+        die "patch exited with code $PATCH_RC — not a hunk rejection but a fatal patch error (malformed patch, unreadable target file). Check $SUSFS_PATCH_FILE."
+    fi
 
     REJ_FILES=$(find . -path ./.zincore_deps -prune -o -name "*.rej" -print 2>/dev/null || true)
     if [ -n "$REJ_FILES" ]; then
