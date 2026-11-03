@@ -1,11 +1,11 @@
 {
   "violet": {
-    "kernel_repo": "https://github.com/LineageOS/android_kernel_xiaomi_sm6150.git",
-    "kernel_branch": "lineage-24.0",
-    "defconfig": "vendor/sdmsteppe-perf_defconfig vendor/violet.config",
+    "kernel_repo": "https://github.com/PixelOS-Devices/android_kernel_xiaomi_sm6150.git",
+    "kernel_branch": "seventeen",
+    "defconfig": "violet_defconfig",
     "kernel_version": "4.14",
     "arch": "arm64",
-    "kernel_name": "perf",
+    "kernel_name": "VantomKernel",
 
     "clang_version": "r563880c",
     "clang_branch": "android16-qpr2-release",

@@ -2,14 +2,13 @@
 
 # Zincore Forge
 
-[![Release](https://img.shields.io/github/release-date/yureixen/zincore-forge?label=Release&labelColor=1f2328&color=6e56cf)](https://github.com/yureixen/zincore-forge/releases)
 [![Downloads](https://img.shields.io/github/downloads/yureixen/zincore-forge/total?label=Downloads&labelColor=1f2328&color=6e56cf)](https://github.com/yureixen/zincore-forge/releases)
 [![License](https://img.shields.io/github/license/yureixen/zincore-forge?label=License&labelColor=1f2328&color=6e56cf)](LICENSE)
 [![Telegram](https://img.shields.io/badge/Telegram-Channel-6e56cf?labelColor=1f2328)](https://t.me/deadenddrops)
 
 </div>
 
-GitHub Actions builder for non-GKI kernels. It compiles the source maintained by teams like LineageOS and PixelOS with a pinned AOSP Clang toolchain, keeping close to their own configuration so the kernel remains as stable and predictable as they made it.
+GitHub Actions build workflow for non-GKI kernels. It compiles the source maintained by teams like LineageOS and PixelOS with the AOSP Clang toolchain, keeping close to their own configuration so the kernel remains as stable and predictable as they made it.
 
 ## Approach
 
@@ -55,7 +54,7 @@ New builds are released on the **1st of every month**. Each release rebuilds eve
 - [JackA1ltman](https://github.com/JackA1ltman) for KernelSU hook script and SuSFS patches.
 - [LineageOS](https://github.com/LineageOS) for kernel source.
 - [osm0sis](https://github.com/osm0sis/AnyKernel3) for AnyKernel3.
-- [PixelOS-Devices](https://github.com/PixelOS-Devices) for kernel source.
+- [PixelOS](https://github.com/PixelOS-Devices) for kernel source.
 - [riarumoda](https://github.com/riarumoda/perf_neon-builder) for the inspiration.
 - [simonpunk](https://gitlab.com/simonpunk/susfs4ksu) for SuSFS.
 - [tiann](https://github.com/tiann/KernelSU) for the original KernelSU.
