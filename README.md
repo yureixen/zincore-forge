@@ -8,7 +8,7 @@
 
 </div>
 
-GitHub Actions build workflow for non-GKI kernels. It compiles the source maintained by teams like LineageOS and PixelOS with AOSP Clang toolchain, keeping close to their own configuration so the kernel remains as stable and predictable as they made it.
+GitHub Actions build workflow for non-GKI kernels. It compiles the source maintained by teams like LineageOS and PixelOS with the AOSP Clang toolchain, keeping close to their own configuration so the kernel remains as stable and predictable as they made it.
 
 ## Approach
 
