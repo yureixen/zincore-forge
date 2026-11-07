@@ -53,7 +53,7 @@ fi
 
 export PATH="${CLANG_DIR}/bin:${PATH}"
 
-# CRITICAL: this kernel's top-level Makefile assigns CC/LD/AR/etc
+# CRITICAL: this kernel's top-level Makefile assigns CC/LD/AR/etc so they must be set via LLVM_TOOLS in compile.sh, not exported here.
 export LLVM=1
 export LLVM_IAS=1
 
