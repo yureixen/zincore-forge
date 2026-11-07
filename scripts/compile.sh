@@ -70,6 +70,7 @@ else
 fi
 
 # KCFLAGS: legacy-kernel / modern-clang compatibility shims
+# -Wno-error=incompatible-function-pointer-types: required on onclite (4.9) for BakaSU's selinux_hide setprocattr; do not remove.
 export KCFLAGS="-O2 -Wno-error=implicit-function-declaration -Wno-error=implicit-int -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=incompatible-function-pointer-types"
 
 BUILD_LOG="${WORKDIR}/${DEVICE}-${VARIANT}-build.log"
