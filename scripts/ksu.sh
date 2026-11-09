@@ -24,13 +24,13 @@ mkdir -p "$(dirname "$KSU_SRC")"
 log "Cloning BakaSU (pinned to ${KSU_REPO_PIN})"
 git init --quiet "$KSU_SRC"
 git -C "$KSU_SRC" remote add origin "$KSU_REPO_URL"
-git -C "$KSU_SRC" fetch --quiet --depth 1 origin "$KSU_REPO_PIN"
+retry 3 git -C "$KSU_SRC" fetch --quiet --depth 1 origin "$KSU_REPO_PIN" || die "failed to fetch BakaSU pin ${KSU_REPO_PIN} from ${KSU_REPO_URL}"
 git -C "$KSU_SRC" checkout --quiet FETCH_HEAD
 
 log "Cloning SuSFS source (JackA1ltman, pinned to ${SUSFS_REPO_PIN})"
 git init --quiet "$SUSFS_SRC"
 git -C "$SUSFS_SRC" remote add origin "$SUSFS_REPO_URL"
-git -C "$SUSFS_SRC" fetch --quiet --depth 1 origin "$SUSFS_REPO_PIN"
+retry 3 git -C "$SUSFS_SRC" fetch --quiet --depth 1 origin "$SUSFS_REPO_PIN" || die "failed to fetch SuSFS pin ${SUSFS_REPO_PIN} from ${SUSFS_REPO_URL}"
 git -C "$SUSFS_SRC" checkout --quiet FETCH_HEAD
 
 FRAGMENT_DIR="zincore_fragments"
