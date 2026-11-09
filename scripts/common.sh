@@ -68,6 +68,26 @@ retry_fetch() {
     die "failed to fetch after $attempts attempts: $url"
 }
 
+# run a command up to <attempts> times, RETRY_DELAY seconds apart (default 5)
+retry() {
+    local attempts="$1"; shift
+    local n=1
+    until "$@"; do
+        if (( n >= attempts )); then
+            return 1
+        fi
+        warn "attempt ${n}/${attempts} failed: $*"
+        n=$((n + 1))
+        sleep "${RETRY_DELAY:-5}"
+    done
+}
+
+# shallow clone with retry; wipes a half-finished clone before each attempt
+_clone_once() { rm -rf "$3"; git clone --quiet --depth 1 -b "$2" "$1" "$3"; }
+clone_with_retry() {
+    retry 3 _clone_once "$1" "$2" "$3" || die "failed to clone $1 ($2) after 3 attempts"
+}
+
 # kernel version preflight check
 verify_kernel_version() {
     local expected="$1"
