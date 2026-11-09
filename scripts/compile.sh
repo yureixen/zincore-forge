@@ -26,7 +26,7 @@ log "Building $DEVICE ($VARIANT) — defconfig: $DEFCONFIG"
 # AnyKernel3
 AK3_DIR="${WORKDIR}/AnyKernel3"
 rm -rf "$AK3_DIR"
-git clone --depth 1 -b "$AK3_BRANCH" "$AK3_REPO" "$AK3_DIR"
+clone_with_retry "$AK3_REPO" "$AK3_BRANCH" "$AK3_DIR"
 
 # Base defconfig
 mkdir -p "$OUT_DIR"
