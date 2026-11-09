@@ -1,7 +1,7 @@
 {
   "onclite": {
-    "kernel_repo": "https://codeberg.org/hadad/android_kernel_xiaomi_onclite.git",
-    "kernel_branch": "lineage-24.0",
+    "kernel_repo": "https://github.com/yureixen/android_kernel_xiaomi_onclite.git",
+    "kernel_branch": "lineage-23",
     "defconfig": "onc-perf_defconfig",
     "kernel_version": "4.9",
     "arch": "arm64",
