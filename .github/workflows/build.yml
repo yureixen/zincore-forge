@@ -102,8 +102,9 @@ jobs:
 
       - name: Clone kernel source
         run: |
-          git clone --depth 1 -b "${{ steps.devcfg.outputs.kernel_branch }}" \
-            "${{ steps.devcfg.outputs.kernel_repo }}" kernel_src
+          set -euo pipefail
+          source builder/scripts/common.sh
+          clone_with_retry "${{ steps.devcfg.outputs.kernel_repo }}" "${{ steps.devcfg.outputs.kernel_branch }}" kernel_src
 
       # Persists the extracted clang toolchain across CI runs
       - name: Cache toolchain
