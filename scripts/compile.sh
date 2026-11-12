@@ -109,7 +109,7 @@ for f in dtbo.img dtb.img; do
 done
 
 DATE_TAG=$(date +%Y%m%d-%H%M)
-ZIP_NAME="zincore-${DEVICE}-${VARIANT}-${DATE_TAG}.zip"
+ZIP_NAME="${KERNEL_NAME}-${CODENAME}-${VARIANT}-${DATE_TAG}.zip"
 
 pushd "$AK3_DIR" >/dev/null
 zip -r9 "${WORKDIR}/${ZIP_NAME}" . -x ".git/*" -x "*.zip"
