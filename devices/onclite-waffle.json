@@ -1,0 +1,20 @@
+{
+  "onclite-waffle": {
+    "codename": "onclite",
+    
+    "kernel_repo": "https://github.com/aosp-onclite/waffle_kernel_xiaomi_onclite.git",
+    "kernel_branch": "sixteen-qpr2",
+    "defconfig": "onc-perf_defconfig",
+    "kernel_version": "4.9",
+    "arch": "arm64",
+    "kernel_name": "Waffle",
+
+    "clang_version": "r563880c",
+    "clang_branch": "android16-qpr2-release",
+
+    "ak3_repo": "https://github.com/yureixen/AnyKernel3.git",
+    "ak3_branch": "onclite",
+
+    "variants": ["nsu", "ksu"]
+  }
+}

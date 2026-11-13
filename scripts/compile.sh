@@ -15,6 +15,8 @@ KERNEL_ARCH=$(read_field arch)
 AK3_REPO=$(read_field ak3_repo)
 AK3_BRANCH=$(read_field ak3_branch)
 KERNEL_NAME=$(read_field kernel_name)
+CODENAME=$(read_field codename)
+CODENAME="${CODENAME:-$DEVICE}"
 
 : "${DEFCONFIG:?defconfig missing in $DEVICE_JSON}"
 : "${AK3_REPO:?ak3_repo missing in $DEVICE_JSON}"
@@ -26,7 +28,7 @@ log "Building $DEVICE ($VARIANT) — defconfig: $DEFCONFIG"
 # AnyKernel3
 AK3_DIR="${WORKDIR}/AnyKernel3"
 rm -rf "$AK3_DIR"
-git clone --depth 1 -b "$AK3_BRANCH" "$AK3_REPO" "$AK3_DIR"
+clone_with_retry "$AK3_REPO" "$AK3_BRANCH" "$AK3_DIR"
 
 # Base defconfig
 mkdir -p "$OUT_DIR"
@@ -70,6 +72,7 @@ else
 fi
 
 # KCFLAGS: legacy-kernel / modern-clang compatibility shims
+# -Wno-error=incompatible-function-pointer-types: required on onclite (4.9) for BakaSU's selinux_hide setprocattr; do not remove.
 export KCFLAGS="-O2 -Wno-error=implicit-function-declaration -Wno-error=implicit-int -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=incompatible-function-pointer-types"
 
 BUILD_LOG="${WORKDIR}/${DEVICE}-${VARIANT}-build.log"
@@ -108,10 +111,11 @@ for f in dtbo.img dtb.img; do
 done
 
 DATE_TAG=$(date +%Y%m%d-%H%M)
-ZIP_NAME="zincore-${DEVICE}-${VARIANT}-${DATE_TAG}.zip"
+ZIP_NAME="${KERNEL_NAME}-${CODENAME}-${VARIANT}-${DATE_TAG}.zip"
 
 pushd "$AK3_DIR" >/dev/null
-zip -r9 "${WORKDIR}/${ZIP_NAME}" . -x ".git/*" -x "*.zip"
+mkdir -p "${WORKDIR}/dist"
+zip -r9 "${WORKDIR}/dist/${ZIP_NAME}" . -x ".git/*" -x "*.zip"
 popd >/dev/null
 
 log "Packaged: ${ZIP_NAME}"

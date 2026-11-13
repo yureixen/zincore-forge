@@ -24,13 +24,13 @@ mkdir -p "$(dirname "$KSU_SRC")"
 log "Cloning BakaSU (pinned to ${KSU_REPO_PIN})"
 git init --quiet "$KSU_SRC"
 git -C "$KSU_SRC" remote add origin "$KSU_REPO_URL"
-git -C "$KSU_SRC" fetch --quiet --depth 1 origin "$KSU_REPO_PIN"
+retry 3 git -C "$KSU_SRC" fetch --quiet --depth 1 origin "$KSU_REPO_PIN" || die "failed to fetch BakaSU pin ${KSU_REPO_PIN} from ${KSU_REPO_URL}"
 git -C "$KSU_SRC" checkout --quiet FETCH_HEAD
 
 log "Cloning SuSFS source (JackA1ltman, pinned to ${SUSFS_REPO_PIN})"
 git init --quiet "$SUSFS_SRC"
 git -C "$SUSFS_SRC" remote add origin "$SUSFS_REPO_URL"
-git -C "$SUSFS_SRC" fetch --quiet --depth 1 origin "$SUSFS_REPO_PIN"
+retry 3 git -C "$SUSFS_SRC" fetch --quiet --depth 1 origin "$SUSFS_REPO_PIN" || die "failed to fetch SuSFS pin ${SUSFS_REPO_PIN} from ${SUSFS_REPO_URL}"
 git -C "$SUSFS_SRC" checkout --quiet FETCH_HEAD
 
 FRAGMENT_DIR="zincore_fragments"
@@ -63,7 +63,6 @@ else
     if [ "$PATCH_RC" -gt 1 ]; then
         die "patch exited with code $PATCH_RC — not a hunk rejection but a fatal patch error (malformed patch, unreadable target file). Check $SUSFS_PATCH_FILE."
     fi
-    
     # A reject is ignored only if it is whitespace-only
     ws_only() {
         awk '
@@ -94,13 +93,13 @@ else
     log "SuSFS patch applied cleanly (no real rejects)"
 fi
 
-# Manual hook script
+# SuSFS inline hook patches (susfs_inline_hook_patches.sh)
 log "Applying SuSFS manual hook patches"
 bash "${SUSFS_SRC}/Patches/susfs_inline_hook_patches.sh" | tee /tmp/zincore_susfs_hook.log
 grep -o "Current susfs patch version:[0-9.]*" /tmp/zincore_susfs_hook.log | head -1 | sed 's/Current susfs patch version://' > "${WORKDIR}/${DEVICE}-susfs-version.txt" || true
 [ -s "${WORKDIR}/${DEVICE}-susfs-version.txt" ] || die "SuSFS hook script ran but no patch version was found in /tmp/zincore_susfs_hook.log, the version grep may be out of date"
 
-# Core config fragment (structural — merged into out/.config by compile.sh)
+# Static symbol exports required by BakaSU
 log "Patching static symbol exports required by BakaSU"
 
 UNSTATIC_APPLIED=0
@@ -138,6 +137,7 @@ if [ "$UNSTATIC_APPLIED" -lt "$UNSTATIC_TOTAL" ]; then
     warn "$((UNSTATIC_TOTAL - UNSTATIC_APPLIED)) pattern(s) above were NOT applied — this is expected if they're already non-static in this tree, but if this is a NEW kernel source (different repo/version than previously verified), manually confirm BakaSU actually has the symbol access it needs before trusting this build."
 fi
 
+# Config fragment (merged into out/.config by compile.sh)
 fragment_add "$FRAGMENT_FILE" "-e CONFIG_KSU"
 fragment_add "$FRAGMENT_FILE" "-e CONFIG_KSU_SUSFS"
 fragment_add "$FRAGMENT_FILE" "-e CONFIG_KSU_SUSFS_SUS_PATH"
