@@ -15,6 +15,8 @@ KERNEL_ARCH=$(read_field arch)
 AK3_REPO=$(read_field ak3_repo)
 AK3_BRANCH=$(read_field ak3_branch)
 KERNEL_NAME=$(read_field kernel_name)
+CODENAME=$(read_field codename)
+CODENAME="${CODENAME:-$DEVICE}"
 
 : "${DEFCONFIG:?defconfig missing in $DEVICE_JSON}"
 : "${AK3_REPO:?ak3_repo missing in $DEVICE_JSON}"
@@ -109,7 +111,7 @@ for f in dtbo.img dtb.img; do
 done
 
 DATE_TAG=$(date +%Y%m%d-%H%M)
-ZIP_NAME="${KERNEL_NAME}-${DEVICE}-${VARIANT}-${DATE_TAG}.zip"
+ZIP_NAME="${KERNEL_NAME}-${CODENAME}-${VARIANT}-${DATE_TAG}.zip"
 
 pushd "$AK3_DIR" >/dev/null
 mkdir -p "${WORKDIR}/dist"
