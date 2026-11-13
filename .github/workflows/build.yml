@@ -181,7 +181,7 @@ jobs:
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
           name: zincore-${{ matrix.device }}-${{ matrix.variant }}
-          path: kernel_src/zincore-*.zip
+          path: kernel_src/dist/*.zip
           if-no-files-found: error
 
       - name: Upload debug artifacts
