@@ -18,6 +18,14 @@ KERNEL_NAME=$(read_field kernel_name)
 CODENAME=$(read_field codename)
 CODENAME="${CODENAME:-$DEVICE}"
 
+# Optional per-device fields
+KERNEL_IMAGE=$(read_field kernel_image)
+MKDTBOIMG=$(read_field mkdtboimg)
+DTBO_CFG=$(read_field dtbo_cfg)
+DTBO_DIR=$(read_field dtbo_dir)
+DTB_CFG=$(read_field dtb_cfg)
+DTB_DIR=$(read_field dtb_dir)
+
 : "${DEFCONFIG:?defconfig missing in $DEVICE_JSON}"
 : "${AK3_REPO:?ak3_repo missing in $DEVICE_JSON}"
 : "${AK3_BRANCH:?ak3_branch missing in $DEVICE_JSON}"
@@ -83,6 +91,8 @@ make -j"$(nproc)" O="$OUT_DIR" ARCH="$KERNEL_ARCH" CC="$CC_WRAPPED" $LLVM_TOOLS 
 IMAGE_PATH="${OUT_DIR}/arch/${KERNEL_ARCH}/boot/Image.gz-dtb"
 [ -f "$IMAGE_PATH" ] || IMAGE_PATH="${OUT_DIR}/arch/${KERNEL_ARCH}/boot/Image.gz"
 [ -f "$IMAGE_PATH" ] || IMAGE_PATH="${OUT_DIR}/arch/${KERNEL_ARCH}/boot/Image"
+# Optional override: force a specific image (e.g. "Image" when the source packages the raw Image)
+[ -z "$KERNEL_IMAGE" ] || IMAGE_PATH="${OUT_DIR}/arch/${KERNEL_ARCH}/boot/${KERNEL_IMAGE}"
 
 if [ ! -f "$IMAGE_PATH" ]; then
     die "No kernel image found at expected paths under ${OUT_DIR}/arch/${KERNEL_ARCH}/boot/ — build did not actually produce output, check $BUILD_LOG"
@@ -109,6 +119,20 @@ for f in dtbo.img dtb.img; do
         log "${f} not produced by this build, skipping (not an error)"
     fi
 done
+
+# Optional: build dtbo / dtb images with the source's own mkdtboimg.py (Exynos / Samsung sources)
+if [ -n "$DTBO_CFG" ]; then
+    : "${MKDTBOIMG:?mkdtboimg missing in $DEVICE_JSON (required with dtbo_cfg)}"
+    : "${DTBO_DIR:?dtbo_dir missing in $DEVICE_JSON (required with dtbo_cfg)}"
+    python3 "$MKDTBOIMG" cfg_create "${AK3_DIR}/dtbo.img" "$DTBO_CFG" -d "${OUT_DIR}/${DTBO_DIR}"
+    log "dtbo.img built from ${DTBO_CFG}"
+fi
+if [ -n "$DTB_CFG" ]; then
+    : "${MKDTBOIMG:?mkdtboimg missing in $DEVICE_JSON (required with dtb_cfg)}"
+    : "${DTB_DIR:?dtb_dir missing in $DEVICE_JSON (required with dtb_cfg)}"
+    python3 "$MKDTBOIMG" cfg_create "${AK3_DIR}/dtb" "$DTB_CFG" --dtb-dir "${OUT_DIR}/${DTB_DIR}"
+    log "dtb built from ${DTB_CFG}"
+fi
 
 DATE_TAG=$(date +%Y%m%d-%H%M)
 ZIP_NAME="${KERNEL_NAME}-${CODENAME}-${VARIANT}-${DATE_TAG}.zip"
