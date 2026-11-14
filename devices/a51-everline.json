@@ -1,0 +1,27 @@
+{
+  "a51-everline": {
+    "codename": "a51",
+
+    "kernel_repo": "https://github.com/Parbindar7/android_kernel_samsung_universal9611.git",
+    "kernel_branch": "lineage-24.0",
+    "defconfig": "exynos9611-a51_defconfig",
+    "kernel_version": "4.14",
+    "arch": "arm64",
+    "kernel_name": "Everline",
+
+    "kernel_image": "Image",
+    "mkdtboimg": "build_kernel/bin/mkdtboimg.py",
+    "dtbo_cfg": "build_kernel/configs/dtbo/a51.cfg",
+    "dtbo_dir": "arch/arm64/boot/dts/samsung",
+    "dtb_cfg": "build_kernel/configs/dtb/exynos9611.cfg",
+    "dtb_dir": "arch/arm64/boot/dts/exynos",
+
+    "clang_version": "r563880c",
+    "clang_branch": "android16-qpr2-release",
+
+    "ak3_repo": "https://github.com/yureixen/AnyKernel3.git",
+    "ak3_branch": "a51",
+
+    "variants": ["nsu", "ksu"]
+  }
+}
