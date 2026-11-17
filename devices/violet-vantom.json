@@ -1,5 +1,7 @@
 {
-  "violet": {
+  "violet-vantom": {
+    "codename": "violet",
+    
     "kernel_repo": "https://github.com/PixelOS-Devices/android_kernel_xiaomi_sm6150.git",
     "kernel_branch": "seventeen",
     "defconfig": "violet_defconfig",
