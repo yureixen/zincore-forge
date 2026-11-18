@@ -78,11 +78,6 @@ jobs:
         with:
           path: builder
 
-      - name: Set up swap space
-        uses: pierotofy/set-swap-space@49819abfb41bd9b44fb781159c033dba90353a7c  # v1.0
-        with:
-          swap-size-gb: 8
-
       - name: Install build dependencies
         run: |
           sudo apt-get update
