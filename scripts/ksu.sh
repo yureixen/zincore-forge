@@ -74,12 +74,16 @@ else
                 for (i = 1; i <= nm; i++) if (m[i] != p[i]) exit 1
             }' "$1"
     }
+    
+    REJECT_RECOVERY=$(read_field reject_recovery)
 
     REAL_REJ=()
     while IFS= read -r -d '' rej; do
         if ws_only "$rej"; then
             log "Whitespace-only reject ignored: $rej"
             rm -f -- "$rej"
+        elif [ "${REJECT_RECOVERY,,}" = "true" ] && python3 -I "${SCRIPT_DIR}/reject_recovery.py" "$rej"; then
+            log "Addition-only reject recovered: ${rej%.rej}"
         else
             REAL_REJ+=("$rej")
         fi
@@ -93,7 +97,7 @@ else
     log "SuSFS patch applied cleanly (no real rejects)"
 fi
 
-# SuSFS inline hook patches (susfs_inline_hook_patches.sh)
+# SuSFS inline hook patches
 log "Applying SuSFS manual hook patches"
 bash "${SUSFS_SRC}/Patches/susfs_inline_hook_patches.sh" | tee /tmp/zincore_susfs_hook.log
 grep -o "Current susfs patch version:[0-9.]*" /tmp/zincore_susfs_hook.log | head -1 | sed 's/Current susfs patch version://' > "${WORKDIR}/${DEVICE}-susfs-version.txt" || true
