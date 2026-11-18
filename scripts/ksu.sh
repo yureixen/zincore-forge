@@ -54,10 +54,14 @@ else
     if [ ! -f "$SUSFS_PATCH_FILE" ]; then
         die "$SUSFS_PATCH_FILE not found in pinned SuSFS source — check that susfs_patch_to_${KERNEL_VERSION}.patch exists at this pinned commit."
     fi
+    
+    SUSFS_FUZZ=$(read_field susfs_fuzz)
+    SUSFS_FUZZ="${SUSFS_FUZZ:-3}"
+    [[ "$SUSFS_FUZZ" =~ ^[0-3]$ ]] || die "susfs_fuzz must be 0-3 in $DEVICE_JSON (got '$SUSFS_FUZZ')"
 
-    log "Applying SuSFS patch"
+    log "Applying SuSFS patch (fuzz $SUSFS_FUZZ)"
     set +e
-    patch -p1 --fuzz=3 < "$SUSFS_PATCH_FILE"
+    patch -p1 --fuzz="$SUSFS_FUZZ" < "$SUSFS_PATCH_FILE"
     PATCH_RC=$?
     set -e
     if [ "$PATCH_RC" -gt 1 ]; then
