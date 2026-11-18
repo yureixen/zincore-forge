@@ -8,6 +8,7 @@
     "kernel_version": "4.14",
     "arch": "arm64",
     "kernel_name": "Everline",
+    "reject_recovery": true,
 
     "kernel_image": "Image",
     "mkdtboimg": "build_kernel/bin/mkdtboimg.py",
