@@ -49,12 +49,14 @@ New builds are released on the **1st of every month**. Each release rebuilds eve
 
 ## Credits
 
+- [aosp-onclite](https://github.com/aosp-onclite) for kernel source.
 - [Baka-SU](https://github.com/Baka-SU) for KernelSU on non-GKI kernels.
 - [Hadad](https://codeberg.org/hadad) for kernel source.
 - [JackA1ltman](https://github.com/JackA1ltman) for KernelSU hook script and SuSFS patches.
-- [LineageOS](https://github.com/LineageOS) for kernel source.
+- [LineageOS](https://github.com/LineageOS) for kernel sources.
 - [osm0sis](https://github.com/osm0sis/AnyKernel3) for AnyKernel3.
 - [PixelOS](https://github.com/PixelOS-Devices) for kernel source.
+- [RainZ](https://github.com/RainySorcerer) for kernel source.
 - [riarumoda](https://github.com/riarumoda/perf_neon-builder) for the inspiration.
 - [simonpunk](https://gitlab.com/simonpunk/susfs4ksu) for SuSFS.
 - [tiann](https://github.com/tiann/KernelSU) for the original KernelSU.
