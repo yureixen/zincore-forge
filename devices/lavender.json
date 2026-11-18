@@ -1,0 +1,18 @@
+{
+  "lavender": {
+    "kernel_repo": "https://github.com/user-why-red/android_kernel_xiaomi_sdm660_419.git",
+    "kernel_branch": "back",
+    "defconfig": "lavender-perf_defconfig",
+    "kernel_version": "4.19",
+    "arch": "arm64",
+    "kernel_name": "San-Kernel",
+    
+    "clang_version": "r563880c",
+    "clang_branch": "android16-qpr2-release",
+
+    "ak3_repo": "https://github.com/yureixen/AnyKernel3.git",
+    "ak3_branch": "sweet",
+
+    "variants": ["nsu", "ksu"]
+  }
+}
