@@ -1,7 +1,5 @@
 {
-  "a51-everline": {
-    "codename": "a51",
-
+  "a51": {
     "kernel_repo": "https://github.com/Parbindar7/android_kernel_samsung_universal9611.git",
     "kernel_branch": "lineage-24.0",
     "defconfig": "exynos9611-a51_defconfig",
@@ -9,6 +7,7 @@
     "arch": "arm64",
     "kernel_name": "Everline",
     "reject_recovery": true,
+    "susfs_fuzz": 2,
 
     "kernel_image": "Image",
     "mkdtboimg": "build_kernel/bin/mkdtboimg.py",
