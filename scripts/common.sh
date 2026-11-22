@@ -14,53 +14,6 @@ log()  { echo "→ $*"; }
 warn() { echo "⚠ $*" >&2; }
 die()  { echo "✗ $*" >&2; exit 1; }
 
-# device JSON field reader
-read_field() {
-    local field="$1"
-
-    : "${DEVICE:?read_field: DEVICE is not set}"
-    : "${DEVICE_JSON:?read_field: DEVICE_JSON is not set}"
-
-    if [[ ! -f "$DEVICE_JSON" ]]; then
-        die "read_field: device config not found at $DEVICE_JSON"
-    fi
-
-    python3 -c "
-import json, sys
-try:
-    d = json.load(open('$DEVICE_JSON'))['$DEVICE']
-except FileNotFoundError:
-    sys.exit('read_field: $DEVICE_JSON not found')
-except KeyError:
-    sys.exit(\"read_field: device '$DEVICE' not found in $DEVICE_JSON\")
-except json.JSONDecodeError as e:
-    sys.exit(f'read_field: invalid JSON in $DEVICE_JSON: {e}')
-print(d.get('$field', ''))
-"
-}
-
-# device JSON list reader — prints one array element per line (empty if absent)
-read_list() {
-    local field="$1"
-
-    : "${DEVICE:?read_list: DEVICE is not set}"
-    : "${DEVICE_JSON:?read_list: DEVICE_JSON is not set}"
-
-    python3 - "$DEVICE_JSON" "$DEVICE" "$field" <<'PY'
-import json, sys
-path, dev, field = sys.argv[1:4]
-try:
-    d = json.load(open(path))[dev]
-except (OSError, KeyError, json.JSONDecodeError) as e:
-    sys.exit(f"read_list: cannot read '{dev}' from {path}: {e}")
-v = d.get(field, [])
-if not isinstance(v, list):
-    sys.exit(f"read_list: '{field}' in {path} must be a JSON array")
-for item in v:
-    print(item)
-PY
-}
-
 # config fragment writer
 fragment_add() {
     local fragment_file="$1"
