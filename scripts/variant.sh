@@ -7,9 +7,6 @@ source "${SCRIPT_DIR}/common.sh"
 DEVICE="${1:?Usage: variant.sh <device> <variant>}"
 VARIANT="${2:?Usage: variant.sh <device> <variant>}"
 
-# Device-level kernel patches (both variants), before variant-specific patches
-bash "${SCRIPT_DIR}/kernel_patches.sh" "$DEVICE"
-
 case "$VARIANT" in
     nsu) log "NSU (stock) variant — nothing to add" ;;
     ksu)
