@@ -139,6 +139,7 @@ unstatic "security/selinux/ss/services.c" "DEFINE_RWLOCK(policy_rwlock);"
 unstatic "security/selinux/hooks.c" "struct security_operations selinux_ops"
 unstatic "security/selinux/ss/services.c" "void security_dump_masked_av("
 unstatic "security/selinux/ss/services.c" "void context_struct_compute_av("
+unstatic "security/selinux/hooks.c" "int inode_doinit_with_dentry"
 
 log "Static-symbol export summary: ${UNSTATIC_APPLIED}/${UNSTATIC_TOTAL} applied"
 if [ "$UNSTATIC_APPLIED" -lt "$UNSTATIC_TOTAL" ]; then
