@@ -18,6 +18,7 @@ Built for those who want the stability of a stock kernel but still want root whe
 
 | Supported devices | Kernel version | Supported Android versions |
 | :--- | :---: | :---: |
+| Samsung Galaxy A51 4G ([a51](https://www.gsmarena.com/samsung_galaxy_a51-9963.php)) | 4.14 | Android 13 – 17 |
 | Xiaomi Redmi 7/Y3 ([onclite](https://www.gsmarena.com/xiaomi_redmi_7-9498.php)) | 4.9 | Android 13 – 17 |
 | Xiaomi Redmi Note 7 Pro ([violet](https://www.gsmarena.com/xiaomi_redmi_note_7_pro-9521.php)) | 4.14 | Android 13 – 17 |
 | Xiaomi Redmi Note 10 Pro/Pro Max ([sweet](https://www.gsmarena.com/xiaomi_redmi_note_10_pro-10662.php)) | 4.14 | Android 13 – 17 |
@@ -38,10 +39,24 @@ Built for those who want the stability of a stock kernel but still want root whe
 5. Install [BakaSU Manager](https://github.com/Baka-SU/BakaSU/releases) if needed (`ksu` only).
 
 ### Restore to stock
+
+If you are using a Samsung device, you can jump to the [For Galaxy](#for-galaxy) section.
+
 1. Reboot to bootloader.
 2. Flash the stock boot image: `fastboot flash boot boot.img`
 3. If you backed up `dtbo`, restore it too: `fastboot flash dtbo dtbo.img`
 4. Reboot: `fastboot reboot`
+
+### For Galaxy
+
+#### Odin (Windows)
+1. Reboot to Download mode.
+2. Put `boot.img` and `dtbo.img` in a `.tar` archive.
+3. Load it in the `AP` slot and press **Start**.
+
+#### Heimdall (Linux, macOS)
+1. Reboot to Download mode.
+2. Flash the stock `boot` and `dtbo` image: `heimdall flash --BOOT boot.img --DTBO dtbo.img`
 
 ## Release schedule
 
@@ -49,11 +64,13 @@ New builds are released on the **1st of every month**. Each release rebuilds eve
 
 ## Credits
 
+- [aosp-onclite](https://github.com/aosp-onclite) for kernel source.
 - [Baka-SU](https://github.com/Baka-SU) for KernelSU on non-GKI kernels.
 - [Hadad](https://codeberg.org/hadad) for kernel source.
 - [JackA1ltman](https://github.com/JackA1ltman) for KernelSU hook script and SuSFS patches.
-- [LineageOS](https://github.com/LineageOS) for kernel source.
+- [LineageOS](https://github.com/LineageOS) for kernel sources.
 - [osm0sis](https://github.com/osm0sis/AnyKernel3) for AnyKernel3.
+- [Parbindar7](https://github.com/Parbindar7) for kernel source.
 - [PixelOS](https://github.com/PixelOS-Devices) for kernel source.
 - [riarumoda](https://github.com/riarumoda/perf_neon-builder) for the inspiration.
 - [simonpunk](https://gitlab.com/simonpunk/susfs4ksu) for SuSFS.

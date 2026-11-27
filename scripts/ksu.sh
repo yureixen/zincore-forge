@@ -54,10 +54,14 @@ else
     if [ ! -f "$SUSFS_PATCH_FILE" ]; then
         die "$SUSFS_PATCH_FILE not found in pinned SuSFS source — check that susfs_patch_to_${KERNEL_VERSION}.patch exists at this pinned commit."
     fi
+    
+    SUSFS_FUZZ=$(read_field susfs_fuzz)
+    SUSFS_FUZZ="${SUSFS_FUZZ:-3}"
+    [[ "$SUSFS_FUZZ" =~ ^[0-3]$ ]] || die "susfs_fuzz must be 0-3 in $DEVICE_JSON (got '$SUSFS_FUZZ')"
 
-    log "Applying SuSFS patch"
+    log "Applying SuSFS patch (fuzz $SUSFS_FUZZ)"
     set +e
-    patch -p1 --fuzz=3 < "$SUSFS_PATCH_FILE"
+    patch -p1 --fuzz="$SUSFS_FUZZ" < "$SUSFS_PATCH_FILE"
     PATCH_RC=$?
     set -e
     if [ "$PATCH_RC" -gt 1 ]; then
@@ -74,12 +78,16 @@ else
                 for (i = 1; i <= nm; i++) if (m[i] != p[i]) exit 1
             }' "$1"
     }
+    
+    REJECT_RECOVERY=$(read_field reject_recovery)
 
     REAL_REJ=()
     while IFS= read -r -d '' rej; do
         if ws_only "$rej"; then
             log "Whitespace-only reject ignored: $rej"
             rm -f -- "$rej"
+        elif [ "${REJECT_RECOVERY,,}" = "true" ] && python3 -I "${SCRIPT_DIR}/reject_recovery.py" "$rej"; then
+            log "Addition-only reject recovered: ${rej%.rej}"
         else
             REAL_REJ+=("$rej")
         fi
@@ -93,11 +101,11 @@ else
     log "SuSFS patch applied cleanly (no real rejects)"
 fi
 
-# SuSFS inline hook patches (susfs_inline_hook_patches.sh)
+# SuSFS inline hook patches
 log "Applying SuSFS manual hook patches"
-bash "${SUSFS_SRC}/Patches/susfs_inline_hook_patches.sh" | tee /tmp/zincore_susfs_hook.log
-grep -o "Current susfs patch version:[0-9.]*" /tmp/zincore_susfs_hook.log | head -1 | sed 's/Current susfs patch version://' > "${WORKDIR}/${DEVICE}-susfs-version.txt" || true
-[ -s "${WORKDIR}/${DEVICE}-susfs-version.txt" ] || die "SuSFS hook script ran but no patch version was found in /tmp/zincore_susfs_hook.log, the version grep may be out of date"
+bash "${SUSFS_SRC}/Patches/susfs_inline_hook_patches.sh"
+grep -oE '#define SUSFS_VERSION "v[0-9.]+"' include/linux/susfs.h | head -1 | sed -E 's/.*"(v[0-9.]+)".*/\1/' > "${WORKDIR}/${DEVICE}-susfs-version.txt" || true
+[ -s "${WORKDIR}/${DEVICE}-susfs-version.txt" ] || die "SUSFS_VERSION not found in include/linux/susfs.h after patching, the SuSFS patch layout may have changed"
 
 # Static symbol exports required by BakaSU
 log "Patching static symbol exports required by BakaSU"
@@ -131,6 +139,7 @@ unstatic "security/selinux/ss/services.c" "DEFINE_RWLOCK(policy_rwlock);"
 unstatic "security/selinux/hooks.c" "struct security_operations selinux_ops"
 unstatic "security/selinux/ss/services.c" "void security_dump_masked_av("
 unstatic "security/selinux/ss/services.c" "void context_struct_compute_av("
+unstatic "security/selinux/hooks.c" "int inode_doinit_with_dentry"
 
 log "Static-symbol export summary: ${UNSTATIC_APPLIED}/${UNSTATIC_TOTAL} applied"
 if [ "$UNSTATIC_APPLIED" -lt "$UNSTATIC_TOTAL" ]; then
