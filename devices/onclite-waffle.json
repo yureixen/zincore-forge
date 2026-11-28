@@ -3,7 +3,7 @@
     "codename": "onclite",
     
     "kernel_repo": "https://github.com/aosp-onclite/waffle_kernel_xiaomi_onclite.git",
-    "kernel_branch": "sixteen-qpr2",
+    "kernel_branch": "sixteen-staging",
     "defconfig": "onc-perf_defconfig",
     "kernel_version": "4.9",
     "arch": "arm64",
